@@ -34,3 +34,5 @@ lerna-debug.log*
 
 #keys
 urls.txt
+
+wrangler.toml
