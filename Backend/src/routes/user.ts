@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import { PrismaClient } from "@prisma/client/edge";
 import { withAccelerate } from "@prisma/extension-accelerate";
 import { decode, sign, verify } from "hono/jwt";
+import { signupInput, signinInput } from "@nikhil_653/thoughts-common";
 
 export const userRouter = new Hono<{
   Bindings: {
@@ -14,6 +15,13 @@ export const userRouter = new Hono<{
 
 userRouter.post("/signup", async (c) => {
   const body = await c.req.json();
+  const{ success } = signupInput.safeParse(body);
+  if(!success) {
+    c.status(411);
+    return c.json({
+      message: "Inputs not correct"
+    })
+  }
   const prisma = new PrismaClient({
     datasourceUrl: c.env.DATABASE_URL, // the env variable is not accessible globally it must happen in each and every route
   }).$extends(withAccelerate());
@@ -43,8 +51,10 @@ userRouter.post("/signup", async (c) => {
 
 // SIGNIN Route
 
+//To add zod validation we must make sure that the user sending the body must follow rules of sanatize 
 userRouter.post("/signin", async (c) => {
   const body = await c.req.json();
+
   const prisma = new PrismaClient({
     datasourceUrl: c.env.DATABASE_URL, // the env variable is not accessible globally it must happen in each and every route
   }).$extends(withAccelerate());
